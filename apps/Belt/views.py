@@ -5,7 +5,7 @@ from django.contrib import messages
 # Create your views here.
 def index(request):
 	request.session['logged_in'] = False
-	return render(request, 'Day_7_Login/index.html')
+	return render(request, 'Belt/index.html')
 
 def login(request):
 	email = request.POST['email']
