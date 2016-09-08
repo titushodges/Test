@@ -1,6 +1,7 @@
 from django.shortcuts import render, HttpResponse, redirect
-from . import models
-import bcrypt, re
+from .models import users, friends
+import bcrypt, re, requests
+from django.db.models import Count
 from django.contrib import messages
 # Create your views here.
 def index(request):
@@ -10,44 +11,39 @@ def index(request):
 def login(request):
 	email = request.POST['email']
 	password = request.POST['password'].encode()
-	user = models.users.objects.all().filter(email= email)
+	user = users.objects.all().filter(email= email)
 	hashed = bcrypt.hashpw(password, bcrypt.gensalt())
 	if not user:
 		messages.warning(request,"Invalid email")
-		return redirect('/login/')
+		return redirect('/')
 	else:
 		if bcrypt.hashpw(password, hashed) == hashed:
 			request.session['logged_in'] = True
 			request.session['user_id'] = request.POST['email']
-			return redirect("/login/success")
+			return redirect('/friends')
 		else:
 			messages.warning(request,"Incorrect password!")
-			return redirect('/login/')
+			return redirect('/')
+	
 
 def register(request):
-	return render(request, 'Day_7_Login/register.html')
-
-def submit(request):
 	from django.core.validators import validate_email
 	from django.core.exceptions import ValidationError
 	_digits = re.compile('\d')
 	def contains_digits(d):
 		return bool(_digits.search(d))
-	if len(request.POST['first_name']) < 2:
-		messages.warning(request,"First name must have at least 2 characters!")
-		return redirect('/login/register')
-	elif contains_digits(request.POST['first_name']):
-		messages.warning(request,"First name may only contain letters")
-		return redirect('/login/register')
+	if len(request.POST['name']) < 2:
+		messages.warning(request,"Name must have at least 2 characters!")
+		return redirect('/')
+	elif contains_digits(request.POST['name']):
+		messages.warning(request,"Name may only contain letters")
+		return redirect('/')
 	else:
 		pass
 
-	if len(request.POST['last_name']) < 2:
-		messages.warning(request,"Last name must have at least 2 characters!")
-		return redirect('/login/register')
-	elif contains_digits(request.POST['last_name']):
-		messages.warning(request,"Last name may only contain letters")
-		return redirect('/login/register')
+	if len(request.POST['alias']) < 2:
+		messages.warning(request,"Alias must have at least 2 characters!")
+		return redirect('/')
 	else:
 		pass
 
@@ -58,43 +54,79 @@ def submit(request):
 		valid_email = False
 	if valid_email != True:
 		messages.warning(request, 'Email is not valid')
-		return redirect('/login/register')
-	elif models.users.objects.filter(email=request.POST['email']).exists():
+		return redirect('/')
+	elif users.objects.filter(email=request.POST['email']).exists():
 		messages.warning(request,"Email already exists")
-		return redirect('/login/register')
+		return redirect('/')
 	else:
 		pass
 
 	if len(request.POST['password']) < 8:
 		messages.warning(request,"Password must be at least 8 characters!")
-		return redirect('/login/register')
+		return redirect('/')
 	else:
 		pass
 
 	if request.POST['confirm_password'] != request.POST['password']:
 		messages.warning(request,"Your passwords do not match!")
-		return redirect('/login/register')
+		return redirect('/')
 	else:
 		password = request.POST['password'].encode()
 		pw_hash = bcrypt.hashpw(password, bcrypt.gensalt())
-		first_name1 = request.POST['first_name']
-		last_name1 = request.POST['last_name']
+		first_name1 = request.POST['name']
+		last_name1 = request.POST['alias']
 		email1 = request.POST['email']
-		models.users.objects.create(first_name=first_name1, last_name=last_name1, email=email1, password=pw_hash)
+		bday = request.POST['bday']
+		users.objects.create(name=first_name1, alias=last_name1, email=email1, password=pw_hash,dob=bday)
 		request.session['logged_in'] = True
 		request.session['user_id'] = request.POST['email']
-		return redirect('/login/success')
+		return redirect('/friends')
 
-def success(request):
+def home(request):
 	if request.session['logged_in'] != True:
 		messages.warning(request,"You are not logged in!")
-		return redirect('/login/')
+		return redirect('/')
 	else:
-		data = models.users.objects.all().filter(email=request.session['user_id'])
-		context = {"data":data}
-		return render(request, 'Day_7_Login/success.html', context)
+		use = users.objects.all().filter(email=request.session['user_id'])
+		users_id = use[0]
+		userlist = friends.objects.all().filter(user_id=users_id).values_list('friend_id', flat=True)
+		context = {
+			'user' : users.objects.all().filter(email=request.session['user_id']),
+			'users' : users.objects.all().exclude(email=request.session['user_id']).exclude(pk__in=userlist),
+			'yourfriends' : friends.objects.all().filter(user_id=users_id).prefetch_related('user_id').prefetch_related('friend_id'),
+		}
+		return render(request, 'Belt/home.html', context)
+
+def user(request, user_id):
+	if request.session['logged_in'] != True:
+		messages.warning(request,"You are not logged in!")
+		return redirect('/')
+	else:
+		context = {
+			'user' : users.objects.all().filter(id=user_id),
+		}
+		return render(request, 'Belt/user.html', context)
 
 def logout(request):
 	request.session.flush()
-	return redirect('/login/')
+	return redirect('/')
 
+def add(request, item_id):
+	if request.session['logged_in'] != True:
+		messages.warning(request,"You are not logged in!")
+		return redirect('/')
+	else:
+		use = users.objects.all().filter(email=request.session['user_id'])
+		users_id = use[0]
+		friend = users.objects.all().filter(id=item_id)
+		fri = friend[0]
+		friends.objects.create(user_id=users_id,friend_id=fri)
+		return redirect('/friends')
+
+def delete(request, item_id):
+	if request.session['logged_in'] != True:
+		messages.warning(request,"You are not logged in!")
+		return redirect('/')
+	else:
+		friends.objects.all().filter(id=item_id).delete()
+		return redirect('/friends')

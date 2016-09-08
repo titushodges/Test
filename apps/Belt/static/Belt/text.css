@@ -1,6 +1,95 @@
 *{
-	margin: 5px;
+	margin: 0px;
+	padding: 0px;
 }
-h1{
-	margin-left: 20px;
+#wrapper{
+	width: 950px;
+	margin: auto;
+	padding: 20px;
+}
+
+
+#register{									/* Index */
+	border:  1px solid black;
+	display: inline-block;
+	padding: 40px 20px;
+	margin-top: 40px;
+}
+#register input[type="submit"]{
+	margin-left: 250px;
+	padding: 5px 10px;
+}
+#register p{
+	width: 150px;
+	display: inline-block;
+}
+label{
+	display: block;
+	margin: 10px 0px;
+}
+
+#login{
+	border:  1px solid black;
+	display: inline-block;
+	padding: 40px 20px;
+	margin-top: 40px;
+	float: right;
+}
+#login input[type="submit"]{
+	margin-left: 250px;
+	padding: 5px 10px;
+}
+#login p{
+	width: 150px;
+	display: inline-block;
+}
+#message{
+	display: block;
+	text-align: center;
+}
+
+
+
+#header a{											/* Home */
+	float: right;
+	display: inline-block;
+	margin-top: 10px;
+}
+#header h1{
+	display: inline-block;
+	margin-bottom: 10px;
+}
+table {
+    border-collapse: collapse;
+    width: 400px;
+    margin-bottom: 50px;
+}
+table, th, td {
+    border: 1px solid black;
+    padding: 5px;
+}
+tr:nth-child(even) {
+	background-color: #f2f2f2
+}
+td:nth-child(even){
+	text-align: center;
+}
+#friends h2{
+	margin-bottom: 20px;
+}
+#users h2{
+	margin-bottom: 20px;
+}
+
+
+
+
+#header2{											/* Home */
+	float: right;
+}
+#user h1{
+	margin: 40px 0px;
+}
+#user h2{
+	margin: 20px 0px;
 }

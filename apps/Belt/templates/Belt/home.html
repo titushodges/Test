@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Friends Home</title>
+	{% load staticfiles %}
+	<link rel="stylesheet" type="text/css" href="{% static 'Belt/text.css' %}">
+</head>
+<body>
+	<div id="wrapper">
+		<div id="header">
+			<h1>Hello, {{ user.0.alias }}!</h1>
+			<a href="/logout">Logout</a>
+		</div>
+		<div id="friends">
+			<h2>Here is the list of your friends:</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Alias</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for friend in yourfriends %}
+						<tr>
+							<td>{{ friend.friend_id.alias }}</td>
+							<td><a href="/user/{{friend.friend_id.id}}">View Profile</a> &#124; <a href="/delete/{{friend.id}}">Remove as Friend</a></td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div id="users">
+			<h2>Other Users not on your friend's list:</h2>
+			<div id="scroll_user">
+				<table>
+				<thead>
+					<tr>
+						<th>Alias</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for user in users %}
+						<tr>
+							<td><a href="/user/{{user.id}}">{{ user.alias }}</a></td>
+							<td><button><a href="/add/{{user.id}}">Add as Friend</a></button></td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

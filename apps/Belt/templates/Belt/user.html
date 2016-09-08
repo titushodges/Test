@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ user.0.alias }}'s Profile</title>
+	{% load staticfiles %}
+	<link rel="stylesheet" type="text/css" href="{% static 'Belt/text.css' %}">
+</head>
+<body>
+	<div id="wrapper">
+		<div id="header2">
+			<p><a href="/friends">Home</a> &#124; <a href="/logout">Logout</a></p>
+		</div>
+		<div id="user">
+			<h1>{{ user.0.alias }}'s Profile</h1>
+			<h2>Name: {{ user.0.name }}</h2>
+			<h2>Email Address: {{ user.0.email }}</h2>
+		</div>
+	</div>
+</body>
+</html>
