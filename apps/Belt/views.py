@@ -10,14 +10,13 @@ def index(request):
 
 def login(request):
 	email = request.POST['email']
-	password = request.POST['password'].encode()
+	passw = request.POST['password'].encode()
 	user = users.objects.all().filter(email= email)
-	hashed = bcrypt.hashpw(password, bcrypt.gensalt())
 	if not user:
 		messages.warning(request,"Invalid email")
 		return redirect('/')
 	else:
-		if bcrypt.hashpw(password, hashed) == hashed:
+		if bcrypt.hashpw(passw, user[0].password.encode()) == user[0].password:
 			request.session['logged_in'] = True
 			request.session['user_id'] = request.POST['email']
 			return redirect('/friends')
@@ -30,20 +29,21 @@ def register(request):
 	from django.core.validators import validate_email
 	from django.core.exceptions import ValidationError
 	_digits = re.compile('\d')
+	error = 0
 	def contains_digits(d):
 		return bool(_digits.search(d))
 	if len(request.POST['name']) < 2:
 		messages.warning(request,"Name must have at least 2 characters!")
-		return redirect('/')
+		error = 1
 	elif contains_digits(request.POST['name']):
 		messages.warning(request,"Name may only contain letters")
-		return redirect('/')
+		error = 1
 	else:
 		pass
 
 	if len(request.POST['alias']) < 2:
 		messages.warning(request,"Alias must have at least 2 characters!")
-		return redirect('/')
+		error = 1
 	else:
 		pass
 
@@ -54,21 +54,25 @@ def register(request):
 		valid_email = False
 	if valid_email != True:
 		messages.warning(request, 'Email is not valid')
-		return redirect('/')
+		error = 1
 	elif users.objects.filter(email=request.POST['email']).exists():
 		messages.warning(request,"Email already exists")
-		return redirect('/')
+		error = 1
 	else:
 		pass
 
 	if len(request.POST['password']) < 8:
 		messages.warning(request,"Password must be at least 8 characters!")
-		return redirect('/')
+		error = 1
 	else:
 		pass
 
 	if request.POST['confirm_password'] != request.POST['password']:
 		messages.warning(request,"Your passwords do not match!")
+		error = 1
+	else:
+		pass
+	if error == 1:
 		return redirect('/')
 	else:
 		password = request.POST['password'].encode()
